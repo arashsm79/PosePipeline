@@ -96,6 +96,16 @@ def top_down_pipeline(
         if top_down_method_name == "OpenPose":
             OpenPose.populate(key)
             OpenPosePerson.populate(key)
+        
+        # this is because you cannot populate TopDownPerson without the corresponding BottomUpPerson.
+        # However, you cannot populate BottomUpPerson without running tracking so this is kind of a chicken and egg problem.
+        # the real fix would be to run tracking alone first and then run this but right now its easiest to just run this one function.
+        # maybe refer to that one function james uses for the transformer pipeline on how this is done.
+        from pose_pipeline.pipeline import BottomUpBridgingPerson,BottomUpBridging
+        if top_down_method_name == "Bridging_bml_movi_87":
+            if len(BottomUpBridging & key) == 0:
+                return False
+        BottomUpBridgingPerson.populate(key)
 
         TopDownPerson.populate(top_down_key, reserve_jobs=reserve_jobs)
 

@@ -436,44 +436,43 @@ class OpenPoseVideo(dj.Computed):
 class BlurredVideo(dj.Computed):
     definition = """
     -> Video
-    -> OpenPose
     ---
     output_video      : attach@localattach    # datajoint managed video file
     """
 
     def make(self, key):
-        from pose_pipeline.utils.visualization import video_overlay
+        # from pose_pipeline.utils.visualization import video_overlay
 
-        video = Video.get_robust_reader(key, return_cap=False)
-        keypoints = (BottomUpPeople & key & 'bottom_up_method_name="Bridging_OpenPose"').fetch1("keypoints")
+        # video = Video.get_robust_reader(key, return_cap=False)
+        # keypoints = (BottomUpPeople & key & 'bottom_up_method_name="Bridging_OpenPose"').fetch1("keypoints")
 
-        def overlay_callback(image, idx):
-            image = image.copy()
-            if keypoints[idx] is None:
-                return image
+        # def overlay_callback(image, idx):
+        #     image = image.copy()
+        #     if keypoints[idx] is None:
+        #         return image
 
-            found_noses = keypoints[idx][:, 0, -1] > 0.1
-            nose_positions = keypoints[idx][found_noses, 0, :2]
-            neck_positions = keypoints[idx][found_noses, 1, :2]
+        #     found_noses = keypoints[idx][:, 0, -1] > 0.1
+        #     nose_positions = keypoints[idx][found_noses, 0, :2]
+        #     neck_positions = keypoints[idx][found_noses, 1, :2]
 
-            radius = np.linalg.norm(neck_positions - nose_positions, axis=1)
-            radius = np.clip(radius, 10, 250)
+        #     radius = np.linalg.norm(neck_positions - nose_positions, axis=1)
+        #     radius = np.clip(radius, 10, 250)
 
-            for i in range(nose_positions.shape[0]):
-                center = (int(nose_positions[i, 0]), int(nose_positions[i, 1]))
-                cv2.circle(image, center, int(radius[i]), (255, 255, 255), -1)
+        #     for i in range(nose_positions.shape[0]):
+        #         center = (int(nose_positions[i, 0]), int(nose_positions[i, 1]))
+        #         cv2.circle(image, center, int(radius[i]), (255, 255, 255), -1)
 
-            return image
+        #     return image
 
-        fd, out_file_name = tempfile.mkstemp(suffix=".mp4")
-        os.close(fd)
-        video_overlay(video, out_file_name, overlay_callback, downsample=1)
-
-        key["output_video"] = out_file_name
+        # fd, out_file_name = tempfile.mkstemp(suffix=".mp4")
+        # os.close(fd)
+        # video_overlay(video, out_file_name, overlay_callback, downsample=1)
+        
+        key["output_video"] = (Video & key).fetch1("video")
         self.insert1(key)
-
-        os.remove(out_file_name)
-        os.remove(video)
+        os.remove(key['output_video'])
+        # os.remove(out_file_name)
+        # os.remove(video)
 
 
 @schema

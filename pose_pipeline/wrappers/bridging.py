@@ -39,9 +39,9 @@ def make_coco_25(model):
 def get_model():
     # doing this here to only load model once, since this takes quite a while
     if get_model.model is None:
-        model_path = os.path.join(MODEL_DATA_DIR, "bridging_formats")
-        model = hub.load(model_path)
-        # get_model.model = hub.load('https://bit.ly/metrabs_l')  # Takes about 3 minutes
+        # model_path = os.path.join(MODEL_DATA_DIR, "bridging_formats")
+        model = hub.load('/home/admin/dev/bodymodels/model_weights/metrabs_eff2l_y4_384px_800k_28ds')
+        # model = hub.load('https://bit.ly/metrabs_l')  # Takes about 3 minutes
 
         model.per_skeleton_joint_names = {k: v.numpy() for k, v in model.per_skeleton_joint_names.items()}
         model.per_skeleton_indices = {k: v.numpy() for k, v in model.per_skeleton_indices.items()}
@@ -78,7 +78,8 @@ def filter_skeleton(keypoints, skeleton, model=None):
         model = get_model()
     idx = model.per_skeleton_indices[skeleton]
 
-    keypoints = np.array([k[..., idx, :] for k in keypoints])
+    # keypoints = np.array([k[0, idx, :] for k in keypoints])
+    keypoints = np.array([k[idx, :] for k in keypoints]) # TODO: this function is called with different inputs. one type is Person x Keypoints x 2, one is just Keypoints x 2. need to decide the best way to handle this
     return keypoints
 
 def scale_align(poses):
@@ -99,7 +100,7 @@ def augmentation_noise(poses3d):
 
 def noise_to_conf(x, half_val=200, sharpness=50):
     x = -(x - half_val) / sharpness
-    return 1 / (1 + tf.math.exp(-x))
+    return 1 / (1 + np.exp(-x))
 
 
 def bridging_formats_bottom_up(key, model=None, skeleton=""):
@@ -107,7 +108,7 @@ def bridging_formats_bottom_up(key, model=None, skeleton=""):
     if model is None:
         model = get_model()
 
-    from mmpose.apis import init_pose_model, inference_bottom_up_pose_model
+    # from mmpose.apis import init_pose_model, inference_bottom_up_pose_model
     from tqdm import tqdm
 
     video = Video.get_robust_reader(key, return_cap=False)
