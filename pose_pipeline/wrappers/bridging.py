@@ -40,7 +40,7 @@ def get_model():
     # doing this here to only load model once, since this takes quite a while
     if get_model.model is None:
         # model_path = os.path.join(MODEL_DATA_DIR, "bridging_formats")
-        model = hub.load('/home/admin/dev/bodymodels/model_weights/metrabs_eff2l_y4_384px_800k_28ds')
+        model = hub.load('/home/admin/dev/model_weights/metrabs_eff2l_y4_384px_800k_28ds')
         # model = hub.load('https://bit.ly/metrabs_l')  # Takes about 3 minutes
 
         model.per_skeleton_joint_names = {k: v.numpy() for k, v in model.per_skeleton_joint_names.items()}

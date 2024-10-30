@@ -9,32 +9,6 @@ RUN apt-get update && \
 
 ####### If using OpenPose need these next sections
 
-# get openpose
-WORKDIR /openpose
-RUN git clone https://github.com/CMU-Perceptual-Computing-Lab/openpose.git .
-
-# build it
-WORKDIR /openpose/build
-RUN cmake -DBUILD_PYTHON=ON -DUSE_CUDNN=ON  .. && make -j `nproc`
-WORKDIR /openpose
-
-# install Openpose python. note the python version should match the base image
-WORKDIR /openpose/build/python/openpose
-RUN make install
-RUN ls -l /openpose/build/python/openpose
-RUN cp ./pyopenpose.cpython-310-x86_64-linux-gnu.so /usr/local/lib/python3.10/dist-packages
-WORKDIR /usr/local/lib/python3.8/dist-packages
-RUN ln -s pyopenpose.cpython-310m-x86_64-linux-gnu.so pyopenpose
-ENV LD_LIBRARY_PATH="/usr/local/lib/python3.10/dist-packages:${LD_LIBRARY_PATH}"
-
-# download models
-WORKDIR /openpose/models
-RUN sh getModels.sh
-
-# no path needed since installed in the LD_LIBRARY_PATH
-ARG OPENPOSE_PATH=""
-RUN mv /openpose/models /usr/local/lib/python3.10/dist-packages/../../../models/
-
 # ####### Now set up PosePipe itself
 WORKDIR /PosePipe
 COPY requirements.txt .

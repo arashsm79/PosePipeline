@@ -107,6 +107,7 @@ def top_down_pipeline(
                 return False
         BottomUpBridgingPerson.populate(key)
 
+        # continue
         TopDownPerson.populate(top_down_key, reserve_jobs=reserve_jobs)
 
         # TODO: probably should remove this but make sure it doesn't break anything
